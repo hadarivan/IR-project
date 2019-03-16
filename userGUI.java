@@ -194,97 +194,89 @@ public class userGUI {
                 boolean place=false;
                 String searchWord = search.getText();
                 searchWord=searchWord.toLowerCase();
-                boolean found4= searchWord.contains("(");
-                Stack<String> stopList = new Stack<String>();
-                try {
-                    File myObj = new File("index/stopList.txt");
-                    Scanner myReader = new Scanner(myObj);
-                    for (int i=0; myReader.hasNextLine(); i++) {
-                        String data = myReader.nextLine();
-                        stopList.push(data);
-                    }
-                    myReader.close();
-                } catch (FileNotFoundException e) {
-                    System.out.println("An error occurred.");
-                    e.printStackTrace();
-                }
-
-                if (found4)
+                if(searchWord.equals(""))
                 {
-                    words = searchWord.split("[\\(||\\)]");
-                    finalsList=findFiles(words[1], wordsToSearch, filesList, stopList);
-                    if(words[0].equals(""))
-                    {
-                        place=true;
-                        wordsToSearch.clear();
-                        expr=words[2].split(" ");
-                        words[2]= words[2].replace("[ or || and || and not ]", "");
-                        finalsList2=findFiles(words[2], wordsToSearch, filesList, stopList);
-                    }
-                    else
-                    {
-                        wordsToSearch.clear();
-                        expr=words[0].split(" ");
-                        words[0]= words[0].replace("[ or || and || and not ]", "");
-                        finalsList2=findFiles(words[0], wordsToSearch, filesList, stopList);
+                    JOptionPane.showMessageDialog(null, "Please enter word to search", "Alert", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    boolean found4 = searchWord.contains("(");
+                    Stack<String> stopList = new Stack<String>();
+                    try {
+                        File myObj = new File("index/stopList.txt");
+                        Scanner myReader = new Scanner(myObj);
+                        for (int i = 0; myReader.hasNextLine(); i++) {
+                            String data = myReader.nextLine();
+                            stopList.push(data);
+                        }
+                        myReader.close();
+                    } catch (FileNotFoundException e) {
+                        System.out.println("An error occurred.");
+                        e.printStackTrace();
                     }
 
-                    if(expr[1].equals("or"))
-                    {
-                        for(int i=0 ; i<finalsList2.size(); i++)
-                        {
-                         flag=createIndex.checkIfExist(finalsList,finalsList2.get(i));
-                         if(flag) continue;
-                         finalsList.push(finalsList2.get(i));
+                    if (found4) {
+                        words = searchWord.split("[\\(||\\)]");
+                        finalsList = findFiles(words[1], wordsToSearch, filesList, stopList);
+                        if (words[0].equals("")) {
+                            place = true;
+                            wordsToSearch.clear();
+                            expr = words[2].split(" ");
+                            words[2] = words[2].replace("[ or || and || and not ]", "");
+                            finalsList2 = findFiles(words[2], wordsToSearch, filesList, stopList);
+                        } else {
+                            wordsToSearch.clear();
+                            expr = words[0].split(" ");
+                            words[0] = words[0].replace("[ or || and || and not ]", "");
+                            finalsList2 = findFiles(words[0], wordsToSearch, filesList, stopList);
                         }
-                        result.showResult(finalsList);
-                    }
-                    else if(expr[1].equals("and") && expr[2].equals("not"))
-                    {
-                        if(place) { //() first
+
+                        if (expr[1].equals("or")) {
                             for (int i = 0; i < finalsList2.size(); i++) {
-                                for (int j = 0; j < finalsList.size(); j++) {
-                                    finalsList.remove(finalsList2.get(i));
-                                }
+                                flag = createIndex.checkIfExist(finalsList, finalsList2.get(i));
+                                if (flag) continue;
+                                finalsList.push(finalsList2.get(i));
                             }
                             result.showResult(finalsList);
-                        }
-                        else //() second
-                        {
+                        } else if (expr[1].equals("and") && expr[2].equals("not")) {
+                            if (place) { //() first
+                                for (int i = 0; i < finalsList2.size(); i++) {
+                                    for (int j = 0; j < finalsList.size(); j++) {
+                                        finalsList.remove(finalsList2.get(i));
+                                    }
+                                }
+                                result.showResult(finalsList);
+                            } else //() second
+                            {
+                                for (int i = 0; i < finalsList.size(); i++) {
+                                    for (int j = 0; j < finalsList2.size(); j++) {
+                                        finalsList2.remove(finalsList.get(i));
+                                    }
+                                }
+                                result.showResult(finalsList2);
+                            }
+                        } else if (expr[1].equals("and")) {
+                            for (int i = 0; i < finalsList2.size(); i++) {
+                                finalsList.push(finalsList2.get(i));
+                            }
+                            int finalSize = 0;
                             for (int i = 0; i < finalsList.size(); i++) {
-                                for (int j = 0; j < finalsList2.size(); j++) {
-                                    finalsList2.remove(finalsList.get(i));
+                                for (int index = i + 1; index < finalsList.size(); index++) {
+                                    if (finalsList.get(i).equals(finalsList.get(index))) {
+                                        finalList3.push(finalsList.get(i));
+                                    }
                                 }
                             }
-                            result.showResult(finalsList2);
+                            result.showResult(finalList3);
                         }
-                    }
-                    else if(expr[1].equals("and"))
-                    {
-                        for(int i=0 ; i<finalsList2.size(); i++)
-                        {
-                            finalsList.push(finalsList2.get(i));
-                        }
-                        int finalSize=0;
-                        for (int i = 0; i < finalsList.size(); i++) {
-                            for (int index = i + 1; index < finalsList.size(); index++) {
-                                if (finalsList.get(i).equals(finalsList.get(index))) {
-                                    finalList3.push(finalsList.get(i));
-                                }
-                            }
-                        }
-                        result.showResult(finalList3);
+
+
+                    } else {
+                        finalsList = findFiles(searchWord, wordsToSearch, filesList, stopList);
+                        result.showResult(finalsList);
                     }
 
-
+                    result.admin();
                 }
-                else
-                {
-                    finalsList=findFiles(searchWord, wordsToSearch, filesList, stopList);
-                    result.showResult(finalsList);
-                }
-
-                result.admin();
             }
         });
         btnAdd.setBounds(300, 120, 89, 23);
@@ -309,15 +301,32 @@ public class userGUI {
                     e.printStackTrace();
                 }
                 String searchWord = search.getText();
-                finalList=createIndex.SearchSoundex(searchWord);
-                result.showResult(finalList);
-                result.admin();
+                if(searchWord.equals(""))
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter word to search", "Alert", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    finalList = createIndex.SearchSoundex(searchWord);
+                    result.showResult(finalList);
+                    result.admin();
+                }
             }
 
         });
         btnSoundex.setBounds(100, 180, 170, 23);
         frame.getContentPane().add(btnSoundex);
 
+        JButton helpme = new JButton("help me");
+        helpme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent a) {
+                JOptionPane.showMessageDialog(null, "1.Logical expressions: OR, AND, AND NOT\n2.You must use spaces between each word for example:allow OR again\n3.Only one level of" +
+                        " bracket for example:true AND NOT (upon OR use)\n 4.You can also search using wildcard for example:ab*");
+
+            }
+        });
+        helpme.setBounds(100, 300, 100, 23);
+        frame.getContentPane().add(helpme);
     }
 
 }
